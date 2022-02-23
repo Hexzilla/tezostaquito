@@ -3,8 +3,9 @@
     "moduleResolution": "node",
     "noEmitOnError": true,
     "outDir": "dist",
-    "strict": true
+    "strict": true,
+    "noImplicitAny": false,
   },
 
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts", "src/app copy.ts.bak"]
 }

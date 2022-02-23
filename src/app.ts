@@ -1,5 +1,6 @@
+import { DAppClientOptions, RequestPermissionInput, NetworkType } from '@airgap/beacon-sdk';
 import { TezosToolkit } from "@taquito/taquito";
-import { TempleWallet } from "@temple-wallet/dapp";
+import { BeaconWallet } from "@taquito/beacon-wallet";
 import $ from "jquery";
 
 export class App {
@@ -8,20 +9,56 @@ export class App {
   private loading: boolean = false;
 
   constructor() {
+    this.tezos = new TezosToolkit('https://mainnet.api.tez.ie');
     //this.tk = new TezosToolkit("https://api.tez.ie/rpc/mainnet");
-    //this.tk = new TezosToolkit('https://hangzhounet.api.tez.ie');
+    //this.tezos = new TezosToolkit('https://hangzhounet.api.tez.ie');
   }
 
   public async initUI() {
     $("#sync-button").bind("click", () => {
-      this.syncWallet();
+      this.initWallet(); //this.syncWallet();
     })
     $("#show-balance-button").bind("click", () =>
       this.getBalance($("#address-input").val())
     );
   }
+
+  private async initWallet() {
+    try {
+      const options = {
+        name: 'MyAwesomeDapp',
+        iconUrl: 'https://tezostaquito.io/img/favicon.png',
+        preferredNetwork: NetworkType.MAINNET,
+        eventHandlers: {
+          PERMISSION_REQUEST_SUCCESS: {
+            handler: async (data) => {
+              console.log('permission data:', data);
+            },
+          },
+        },
+      };
+      const wallet = new BeaconWallet(options);
+      console.log("wallet", wallet);
+
+      await wallet.requestPermissions({
+        network: {
+          type: NetworkType.MAINNET,
+        },
+      });
+
+      console.log("permsion-ok");
+
+      const userAddress = await wallet.getPKH();
+      console.log("userAddress", userAddress);
+      
+      this.tezos?.setWalletProvider(wallet);
+
+    } catch (error) {
+      console.log(error);
+    }
+  }
   
-  private async syncWallet() {
+  /*private async syncWallet() {
     try {
       if (!this.tezos) {
         const available = await TempleWallet.isAvailable();
@@ -53,7 +90,7 @@ export class App {
     } catch (err) {
       console.error('error:', err);
     }
-  }
+  }*/
 
   private async getBalance(address: string) {
     try {
